@@ -1,0 +1,55 @@
+# Labo Ansible - Atelier n° 6
+
+NETWORK_PREFIX = "192.168.56"
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "control" do |control|
+    control.vm.box = "bento/ubuntu-22.04"
+    control.vm.hostname = "control"
+    control.vm.network :private_network, ip: "#{NETWORK_PREFIX}.10"
+    control.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    control.vm.provider "virtualbox" do |vbox|
+       vbox.memory = 1024
+       vbox.cpus = 2
+       vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "target01" do |target01|
+    target01.vm.box = "bento/ubuntu-22.04"
+    target01.vm.hostname = "target01"
+    target01.vm.network :private_network, ip: "#{NETWORK_PREFIX}.20"
+    target01.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    target01.vm.provider "virtualbox" do |vbox|
+       vbox.memory = 1024
+       vbox.cpus = 2
+       vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "target02" do |target02|
+    target02.vm.box = "bento/ubuntu-22.04"
+    target02.vm.hostname = "target02"
+    target02.vm.network :private_network, ip: "#{NETWORK_PREFIX}.30"
+    target02.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    target02.vm.provider "virtualbox" do |vbox|
+       vbox.memory = 1024
+       vbox.cpus = 2
+       vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "target03" do |target03|
+    target03.vm.box = "bento/ubuntu-22.04"
+    target03.vm.hostname = "target03"
+    target03.vm.network :private_network, ip: "#{NETWORK_PREFIX}.40"
+    target03.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    target03.vm.provider "virtualbox" do |vbox|
+       vbox.memory = 1024
+       vbox.cpus = 2
+       vbox.check_guest_additions = false
+    end
+  end
+
+end

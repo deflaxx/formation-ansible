@@ -1,0 +1,39 @@
+---  # apache-04.yml
+
+- hosts: all
+
+  vars:
+
+    apache:
+      Debian:
+        package_name: apache2
+        service_name: apache2
+      Ubuntu:
+        package_name: apache2
+        service_name: apache2
+      Rocky:
+        package_name: httpd
+        service_name: httpd
+      openSUSE Leap:
+        package_name: apache2
+        service_name: apache2
+
+  tasks:
+
+    - name: Update package information on Debian/Ubuntu
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache
+      package:
+        name: "{{apache[ansible_distribution].package_name}}"
+
+    - name: Start Apache & enable it on boot
+      service:
+        name: "{{apache[ansible_distribution].service_name}}"
+        state: started
+        enabled: true
+
+...

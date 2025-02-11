@@ -1,0 +1,12 @@
+---  # hello-others.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Check if target host is running Rocky or SUSE
+      debug:
+        msg: "This is either Rocky or SUSE."
+      when: ansible_distribution in ["Rocky", "openSUSE Leap"]
+
+...

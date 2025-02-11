@@ -1,0 +1,20 @@
+---  # assert.yml
+
+- hosts: debian
+  gather_facts: false
+
+  tasks:
+
+    - assert:
+        that:
+          - hostname is defined and hostname != ''
+        fail_msg: The hostname variable is undefined or empty.
+
+    - name: Set hostname
+      hostname:
+        name: "{{ hostname }}"
+
+    - debug:
+        msg: Let's check if we see this.
+
+...

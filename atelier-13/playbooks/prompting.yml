@@ -1,0 +1,21 @@
+---  # prompting.yml
+
+- hosts: localhost
+  gather_facts: false
+
+  vars_prompt:
+
+    - name: var1
+      prompt: Please select a value for var1
+      default: 42
+      private: false
+
+    - name: var2
+      prompt: And now for var2 (secret)
+      private: true
+
+  tasks:
+    - debug:
+        msg: "var1 is {{var1}}, var2 is {{var2}}"
+
+...

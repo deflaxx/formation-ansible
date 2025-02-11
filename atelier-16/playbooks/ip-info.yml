@@ -1,0 +1,11 @@
+---  # ip-info.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Display IPv4 addresses
+      debug:
+        msg: "{{ansible_host}}'s IPv4 addresses: {{ansible_all_ipv4_addresses}}"
+
+...

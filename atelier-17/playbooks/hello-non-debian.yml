@@ -1,0 +1,12 @@
+---  # hello-non-debian.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Check if target host is not a Debian-based system
+      debug:
+        msg: "This is not a Debian-based system."
+      when: ansible_os_family != "Debian"
+
+...

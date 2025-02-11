@@ -1,0 +1,17 @@
+---  # playbook-info.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Playbook information
+      debug:
+        msg: Your playbook is in {{playbook_dir}}.
+      run_once: true
+
+    - name: Inventory information
+      debug:
+        msg: Your inventory is in {{inventory_dir}}.
+      run_once: true
+
+...

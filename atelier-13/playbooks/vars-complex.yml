@@ -1,0 +1,28 @@
+---  # vars-complex.yml
+
+- hosts: suse
+  gather_facts: false
+
+  vars:
+
+    motd:
+      hello: Bonjour cher visiteur !
+      quote:
+        - Chat échaudé craint la charrue avant la peau de l'ours.
+        - Chassez le naturiste, il revient au bungalow.
+      lotto: [2, 8, 17, 33, 34, 42]
+
+  tasks:
+
+    - name: Upload /etc/motd
+      copy:
+        dest: /etc/motd
+        content: |
+          {{ motd.hello }}
+
+          Citation du jour: {{ motd.quote[1] }}
+
+          Les numéros du loto: {{ motd.lotto | join(', ') }}
+
+...
+

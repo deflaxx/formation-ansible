@@ -1,0 +1,14 @@
+---  # distribution-info.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Display distribution information
+      debug:
+        msg: >-
+          Host [{{inventory_hostname}}] is running {{ansible_distribution}}
+          version {{ansible_distribution_version}}
+          (family {{ansible_distribution_file_variety}}).
+
+...

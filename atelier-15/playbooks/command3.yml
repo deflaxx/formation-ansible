@@ -1,0 +1,16 @@
+---  # command3.yml
+
+- hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Report root partition space usage
+      command: df -h /
+      changed_when: false
+      register: df_cmd
+
+    - debug:
+        msg: "{{df_cmd.stdout_lines}}"
+
+...

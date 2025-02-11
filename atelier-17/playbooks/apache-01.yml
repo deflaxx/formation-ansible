@@ -1,0 +1,28 @@
+---  # apache-01.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Update package information on Debian/Ubuntu
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache on Debian/Ubuntu
+      apt:
+        name: apache2
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache on Rocky Linux
+      dnf:
+        name: httpd
+      when: ansible_distribution == "Rocky"
+
+    - name: Install Apache on SUSE Linux
+      zypper:
+        name: apache2
+      when: ansible_distribution == "openSUSE Leap"
+
+...

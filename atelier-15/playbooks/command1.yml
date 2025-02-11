@@ -1,0 +1,12 @@
+---  # command1.yml
+
+- hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Report root partition space usage
+      command: df -h /
+
+...
+

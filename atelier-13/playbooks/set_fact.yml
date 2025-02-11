@@ -1,0 +1,16 @@
+---  # set_fact.yml
+
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Define variables
+      set_fact:
+        color: yellow
+        number: 13
+
+    - debug:
+        msg: "Color: {{color}}, Number: {{number}}"
+
+...

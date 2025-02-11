@@ -1,0 +1,38 @@
+---  # apache-01.yml
+
+- hosts: debian
+
+  tasks:
+
+    - name: Update package information
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Apache
+      apt:
+        name: apache2
+
+    - name: Start & enable Apache
+      service:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: Install custom web page
+      copy:
+        dest: /var/www/html/index.html
+        mode: 0644
+        content: |
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Test</title>
+            </head>
+            <body>
+              <h1>My first Ansible-managed website</h1>
+            </body>
+          </html>
+
+...

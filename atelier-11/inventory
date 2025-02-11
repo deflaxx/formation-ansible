@@ -1,0 +1,9 @@
+[debian]
+target01
+target02
+target03
+
+[debian:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=vagrant
+ansible_become=yes

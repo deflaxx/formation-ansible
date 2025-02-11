@@ -1,0 +1,6 @@
+# /etc/hosts
+127.0.0.1      localhost.localdomain  localhost
+192.168.56.10  ansible.sandbox.lan    ansible
+192.168.56.20  rocky.sandbox.lan      rocky
+192.168.56.30  debian.sandbox.lan     debian
+192.168.56.40  suse.sandbox.lan       suse

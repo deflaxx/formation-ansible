@@ -1,0 +1,16 @@
+---  # facts2.yml
+
+- hosts: debian
+
+  tasks:
+
+    - debug:
+        var: ansible_facts.architecture
+
+    - debug:  # alternative syntax 1
+        var: ansible_facts['architecture']
+
+    - debug:  # alternative syntax 2
+        var: ansible_architecture
+
+...

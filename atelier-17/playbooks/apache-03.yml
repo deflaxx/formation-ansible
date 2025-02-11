@@ -1,0 +1,41 @@
+---  # apache-03.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Parameters for Debian/Ubuntu
+      set_fact:
+        apache_package_name: apache2
+        apache_service_name: apache2
+      when: ansible_os_family == "Debian"
+
+    - name: Parameters for Rocky Linux
+      set_fact:
+        apache_package_name: httpd
+        apache_service_name: httpd
+      when: ansible_distribution == "Rocky"
+
+    - name: Parameters for SUSE Linux
+      set_fact:
+        apache_package_name: apache2
+        apache_service_name: apache2
+      when: ansible_distribution == "openSUSE Leap"
+
+    - name: Update package information on Debian/Ubuntu
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache
+      package:
+        name: "{{apache_package_name}}"
+
+    - name: Start Apache & enable it on boot
+      service:
+        name: "{{apache_service_name}}"
+        state: started
+        enabled: true
+
+...

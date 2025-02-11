@@ -1,0 +1,26 @@
+---  # apache-05.yml
+
+- hosts: all
+
+  tasks:
+
+    - include_vars: >
+        apache01_{{ansible_distribution|lower|replace(" ", "-")}}.yml
+
+    - name: Update package information on Debian/Ubuntu
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache
+      package:
+        name: "{{apache_package_name}}"
+
+    - name: Start Apache & enable it on boot
+      service:
+        name: "{{apache_service_name}}"
+        state: started
+        enabled: true
+
+...

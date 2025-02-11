@@ -1,0 +1,12 @@
+---  # hosts-info.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Display host information
+      debug:
+        msg: "Your hosts are: {{groups.all}}"
+      run_once: true
+
+...

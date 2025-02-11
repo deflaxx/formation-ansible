@@ -1,0 +1,14 @@
+---  # system-check.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Check if we're running Ubuntu 22.04 or higher
+      debug:
+        msg: We're running Ubuntu 22.04 or higher
+      when: ansible_distribution == "Ubuntu"
+              and
+            ansible_distribution_version is version('22.04', '>=')
+
+...

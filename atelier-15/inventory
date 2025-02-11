@@ -1,0 +1,12 @@
+[testing]
+rocky
+debian
+suse
+
+[redhat_hosts]
+rocky
+
+[testing:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=vagrant
+ansible_become=yes

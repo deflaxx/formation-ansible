@@ -1,0 +1,53 @@
+---  # apache-02.yml
+
+- hosts: all
+
+  tasks:
+
+    - name: Load distribution-specific parameters
+      include_vars: >
+        apache_{{ansible_distribution|lower|replace(" ", "-") }}.yml
+
+    - name: Update package information on Debian/Ubuntu
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache
+      package:
+        name: "{{apache_package_name}}"
+
+    - name: Start Apache & enable it on boot
+      service:
+        name: "{{apache_service_name}}"
+        state: started
+        enabled: true
+
+    - name: Install custom web page
+      copy:
+        dest: "{{apache_document_root}}/index.html"
+        mode: 0644
+        src: index.html
+
+    - name: Configure redirect
+      copy:
+        dest: "{{apache_config_directory}}/redirect.conf"
+        content: |
+          Redirect /start http://www.startpage.com
+      notify: Reload Apache
+
+    - name: Activate redirect on Debian/Ubuntu
+      command:
+        cmd: a2enconf redirect
+        creates: /etc/apache2/conf-enabled/redirect.conf
+      when: ansible_os_family == "Debian"
+
+  handlers:
+
+    - name: Reload Apache
+      service:
+        name: "{{apache_service_name}}"
+        state: reloaded
+
+...

@@ -1,0 +1,55 @@
+# Labo Ansible - Test n° 1
+
+NETWORK_PREFIX = "192.168.56"
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "alpine-01" do |alpine01|
+    alpine01.vm.box = "generic/alpine319"
+    alpine01.vm.hostname = "alpine-01"
+    alpine01.vm.network :private_network, ip: "#{NETWORK_PREFIX}.10"
+    alpine01.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    alpine01.vm.provider "virtualbox" do |vbox|
+      vbox.memory = 1024
+      vbox.cpus = 2
+      vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "alpine-02" do |alpine02|
+    alpine02.vm.box = "generic/alpine319"
+    alpine02.vm.hostname = "alpine-02"
+    alpine02.vm.network :private_network, ip: "#{NETWORK_PREFIX}.20"
+    alpine02.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    alpine02.vm.provider "virtualbox" do |vbox|
+      vbox.memory = 1024
+      vbox.cpus = 2
+      vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "alpine-03" do |alpine03|
+    alpine03.vm.box = "generic/alpine319"
+    alpine03.vm.hostname = "alpine-03"
+    alpine03.vm.network :private_network, ip: "#{NETWORK_PREFIX}.30"
+    alpine03.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    alpine03.vm.provider "virtualbox" do |vbox|
+      vbox.memory = 1024
+      vbox.cpus = 2
+      vbox.check_guest_additions = false
+    end
+  end
+
+  config.vm.define "alpine-04" do |alpine04|
+    alpine04.vm.box = "generic/alpine319"
+    alpine04.vm.hostname = "alpine-04"
+    alpine04.vm.network :private_network, ip: "#{NETWORK_PREFIX}.40"
+    alpine04.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    alpine04.vm.provider "virtualbox" do |vbox|
+      vbox.memory = 1024
+      vbox.cpus = 2
+      vbox.check_guest_additions = false
+    end
+  end
+
+end
