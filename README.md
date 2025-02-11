@@ -19,7 +19,28 @@ ssh-copy-id vagrant@target01
 ssh-copy-id vagrant@target02
 ssh-copy-id vagrant@target03
 ```
-Tester la commande :
+Tester la commande et obtenir le résultat suivant :
 ```
-ansible all -i target01,target02,target03 -m ping
+vagrant@control:~$ ansible all -i target01,target02,target03 -m ping
+target01 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target02 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
