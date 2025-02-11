@@ -1,7 +1,7 @@
 ## Installation
-1. Version 2.10.8
-2. Version 2.17.8
-3. Version 2.15.13
+1. Ubuntu APT => 2.10.8
+2. Ubuntu PPA => 2.17.8
+3. Rocky PIP => 2.15.13
 
 ## Authentification
 Modifier le /etc/hosts en ajoutant ceci :
@@ -18,5 +18,8 @@ ssh-keygen
 ssh-copy-id vagrant@target01
 ssh-copy-id vagrant@target02
 ssh-copy-id vagrant@target03
+```
+Tester la commande :
+```
 ansible all -i target01,target02,target03 -m ping
 ```
