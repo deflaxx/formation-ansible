@@ -217,3 +217,30 @@ https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_disc
 target01 | CHANGED | rc=0 >>
 root:*:19769:0:99999:7:::
 ```
+
+## Idempotence
+Installer des paquets via ansible :
+```
+ansible all -m package -a "name=tree"
+ansible all -m package -a "name=git"
+ansible all -m package -a "name=nmap"
+```
+Désinstaller les paquets :
+```
+ansible all -m package -a "name=tree state=absent"
+ansible all -m package -a "name=git state=absent"
+ansible all -m package -a "name=nmap state=absent"
+```
+Copie de fichier :
+```
+ansible all -m copy -a "src=/etc/fstab dest=/tmp/test3.txt mode=0644"
+```
+Suppression de fichier :
+```
+ansible all -m file -a "path=/tmp/test3.txt state=absent"
+```
+Afficher l'espace disque :
+```
+ansible all -m command -a "df -h /"
+```
+On remarque que si on lance consécutivement l'action x fois, le résultat ne change pas pour un target host donné. Cela confirme que la commande n’altère pas l’état du système (elle est purement informative)
