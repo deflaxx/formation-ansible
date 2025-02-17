@@ -360,3 +360,126 @@ Exemple de vérification du bon fonctionnement du Playbook :
   </body>
 </html>
 ```
+
+## Handler
+Playbook :
+```yaml
+- name: Configure NTP with Chrony
+  hosts: redhat
+  tasks:
+    - name: Install chrony package
+      ansible.builtin.package:
+        name: chrony
+        state: present
+
+    - name: Enable and start chronyd service
+      ansible.builtin.service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Check default chrony configuration
+      ansible.builtin.command: cat /etc/chrony.conf
+      register: default_config
+      changed_when: false
+
+    - name: Display default chrony configuration
+      ansible.builtin.debug:
+        var: default_config.stdout_lines
+
+    - name: Install custom chrony configuration
+      ansible.builtin.copy:
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+        dest: /etc/chrony.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart chronyd
+
+    - name: Ensure chronyd is reloaded with new configuration
+      ansible.builtin.meta: flush_handlers
+
+  handlers:
+    - name: Restart chronyd
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+```
+Résultat de l'exécution du Playbook :
+```bash
+[vagrant@control playbooks]$ ansible-playbook chrony.yml 
+
+PLAY [Configure NTP with Chrony] *************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************************************
+ok: [target03]
+ok: [target02]
+ok: [target01]
+
+TASK [Install chrony package] ****************************************************************************************************************************************************************************************
+changed: [target01]
+changed: [target02]
+changed: [target03]
+
+TASK [Enable and start chronyd service] ******************************************************************************************************************************************************************************
+changed: [target01]
+changed: [target02]
+changed: [target03]
+
+TASK [Check default chrony configuration] ****************************************************************************************************************************************************************************
+ok: [target01]
+ok: [target02]
+ok: [target03]
+
+TASK [Display default chrony configuration] **************************************************************************************************************************************************************************
+ok: [target01] => {
+    "default_config.stdout_lines": [
+        "# Use public servers from the pool.ntp.org project.",
+...........
+        "#log measurements statistics tracking"
+    ]
+}
+ok: [target02] => {
+    "default_config.stdout_lines": [
+        "# Use public servers from the pool.ntp.org project."
+...........
+        "#log measurements statistics tracking"
+    ]
+}
+ok: [target03] => {
+    "default_config.stdout_lines": [
+        "# Use public servers from the pool.ntp.org project.",
+...........
+        "#log measurements statistics tracking"
+    ]
+}
+
+TASK [Install custom chrony configuration] ***************************************************************************************************************************************************************************
+changed: [target01]
+changed: [target02]
+changed: [target03]
+
+TASK [Ensure chronyd is reloaded with new configuration] *************************************************************************************************************************************************************
+
+TASK [Ensure chronyd is reloaded with new configuration] *************************************************************************************************************************************************************
+
+TASK [Ensure chronyd is reloaded with new configuration] *************************************************************************************************************************************************************
+
+RUNNING HANDLER [Restart chronyd] ************************************************************************************************************************************************************************************
+changed: [target01]
+changed: [target02]
+changed: [target03]
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************************
+target01                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target02                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target03                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0 
+```
