@@ -245,7 +245,7 @@ ansible all -m command -a "df -h /"
 ```
 On remarque que si on lance consécutivement l'action x fois, le résultat ne change pas pour un target host donné. Cela confirme que la commande n’altère pas l’état du système (elle est purement informative)
 
-## Playbooks
+## Playbooks
 Playbook pour Debian :
 ```yaml
 - name: Installer Apache sur Debian
