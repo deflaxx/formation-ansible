@@ -361,7 +361,7 @@ Exemple de vérification du bon fonctionnement du Playbook :
 </html>
 ```
 
-## Handler
+## Handler
 Playbook :
 ```yaml
 - name: Configure NTP with Chrony
@@ -482,4 +482,73 @@ PLAY RECAP *********************************************************************
 target01                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 target02                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 target03                   : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0 
+```
+
+## Variables
+Écrivez un playbook myvars1.yml qui affiche respectivement votre voiture et votre moto préférée en utilisant le module debug et deux variables mycar et mybike définies en tant que play vars. 
+```yaml
+- name: Afficher voiture et moto préférées
+  hosts: localhost
+  vars:
+    mycar: "Porsche"
+    mybike: "KTM"
+  tasks:
+    - name: Afficher les variables
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }} et ma moto préférée est {{ mybike }}."
+```
+Écrivez un playbook myvars2.yml qui fait essentiellement la même chose que myvars1.yml, mais en utilisant une tâche avec set_fact pour définir les deux variables.  
+```yaml
+- name: Afficher voiture et moto préférées avec set_fact
+  hosts: localhost
+  tasks:
+    - name: Définir les variables
+      set_fact:
+        mycar: "Porsche"
+        mybike: "KTM"
+
+    - name: Afficher les variables
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }} et ma moto préférée est {{ mybike }}."
+```
+Écrivez un playbook myvars3.yml qui affiche le contenu des deux variables mycar et mybike mais sans les définir. Avant d’exécuter le playbook, définissez VW et BMW comme valeurs par défaut pour mycar et mybike pour tous les hôtes, en utilisant l’endroit approprié. Effectuez le nécessaire pour remplacer VW et BMW par Mercedes et Honda sur l’hôte target02.  
+```
+[all:vars]
+mycar=VW
+mybike=BMW
+
+[target02:vars]
+mycar=Mercedes
+mybike=Honda
+```
+```yaml
+- name: Afficher voiture et moto préférées sans les définir
+  hosts: all
+  tasks:
+    - name: Afficher les variables
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }} et ma moto préférée est {{ mybike }}."
+
+```
+Écrivez un playbook display_user.yml qui affiche un utilisateur et son mot de passe correspondant à l’aide des variables user et password. Ces deux variables devront être saisies de manière interactive pendant l’exécution du playbook. Les valeurs par défaut seront microlinux pour user et yatahongaga pour password. Le mot de passe ne devra pas s’afficher pendant la saisie.
+
+```yaml
+- name: Afficher utilisateur et mot de passe
+  hosts: localhost
+  vars_prompt:
+    - name: "user"
+      prompt: "Entrez le nom d'utilisateur"
+      default: "microlinux"
+      private: no
+
+    - name: "password"
+      prompt: "Entrez le mot de passe"
+      default: "yatahongaga"
+      private: yes
+
+  tasks:
+    - name: Afficher les informations
+      debug:
+        msg: "User : {{ user }}, Mot de passe : {{ password }}"
+
 ```
