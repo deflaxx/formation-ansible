@@ -9,6 +9,7 @@
   - [Variables](#variables)
   - [Variables enregistrées](#variables-enregistrées)
   - [Facts et variables implicites](#facts-et-variables-implicites)
+  - [Cibles hétérogènes](#cibles-hétérogènes)
 
 ## Installation
 1. Ubuntu APT => 2.10.8
@@ -620,33 +621,6 @@ Playbook pkg-info.yml pour afficher le gestionnaire de paquets utilisé :
       debug:
         msg: "Package manager used: {{ ansible_pkg_mgr }}"
 ```
-Résultat à l'exécution : 
-```bash
-[vagrant@control playbooks]$ ansible-playbook pkg-info.yml 
-
-PLAY [Get package manager information] *********************************************************************************************************************************************************************************
-
-TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
-ok: [target03]
-ok: [target01]
-ok: [target02]
-
-TASK [Identify package manager] ****************************************************************************************************************************************************************************************
-ok: [target01] => {
-    "msg": "Package manager used: dnf"
-}
-ok: [target02] => {
-    "msg": "Package manager used: dnf"
-}
-ok: [target03] => {
-    "msg": "Package manager used: dnf"
-}
-
-PLAY RECAP *************************************************************************************************************************************************************************************************************
-target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-```
 Playbook python-info.yml pour afficher la version de Python installée :
 ```yaml
 - name: Get Python version
@@ -655,34 +629,7 @@ Playbook python-info.yml pour afficher la version de Python installée :
   tasks:
     - name: Display Python version
       debug:
-        msg: "{{ ansible_python_version }}"
-```
-Résultat à l'exécution :
-```bash
-[vagrant@control playbooks]$ ansible-playbook python-info.yml 
-
-PLAY [Get Python version] **********************************************************************************************************************************************************************************************
-
-TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
-ok: [target03]
-ok: [target01]
-ok: [target02]
-
-TASK [Display Python version] ******************************************************************************************************************************************************************************************
-ok: [target01] => {
-    "msg": "3.9.18"
-}
-ok: [target02] => {
-    "msg": "3.9.18"
-}
-ok: [target03] => {
-    "msg": "3.9.18"
-}
-
-PLAY RECAP *************************************************************************************************************************************************************************************************************
-target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+        msg: "Python version: {{ ansible_python_version }}"
 ```
 Playbook dns-info.yml pour afficher le(s) serveur(s) DNS utilisé(s) :
 ```yaml
@@ -692,38 +639,115 @@ Playbook dns-info.yml pour afficher le(s) serveur(s) DNS utilisé(s) :
   tasks:
     - name: Display DNS nameservers
       debug:
-        msg: "{{ ansible_dns.nameservers }}"
+        msg: "Used DNS: {{ ansible_dns.nameservers }}"
 ```
-Résultat à l'exécution :
-```bash
-[vagrant@control playbooks]$ ansible-playbook dns-info.yml 
 
-PLAY [Get DNS nameservers] *********************************************************************************************************************************************************************************************
+## Cibles hétérogènes
+Playbook chrony-01.yml :
+```yaml
+- name: Install and configure Chrony (method 1)
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Chrony on Debian/Ubuntu
+      apt:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Debian"
+      notify: Restart Chrony
 
-TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
-ok: [target02]
-ok: [target03]
-ok: [target01]
+    - name: Install Chrony on Rocky Linux
+      dnf:
+        name: chrony
+        state: present
+      when: ansible_os_family == "RedHat"
+      notify: Restart Chrony
 
-TASK [Display DNS nameservers] *****************************************************************************************************************************************************************************************
-ok: [target01] => {
-    "msg": [
-        "10.0.2.3"
-    ]
-}
-ok: [target02] => {
-    "msg": [
-        "10.0.2.3"
-    ]
-}
-ok: [target03] => {
-    "msg": [
-        "10.0.2.3"
-    ]
-}
+    - name: Install Chrony on SUSE
+      zypper:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Suse"
+      notify: Restart Chrony
 
-PLAY RECAP *************************************************************************************************************************************************************************************************************
-target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    - name: Ensure Chrony config directory exists
+      file:
+        path: /etc/chrony
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy Chrony configuration
+      copy:
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+        dest: /etc/chrony/chrony.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Chrony
+
+  handlers:
+    - name: Restart Chrony
+      service:
+        name: chronyd
+        state: restarted
+        enabled: true
+```
+Playbook chorny-02.yml :
+```yaml
+- name: Install and configure Chrony (method 2)
+  hosts: all
+  become: true
+  vars:
+    chrony_package: "{{ 'chrony' if ansible_os_family in ['Debian', 'RedHat', 'Suse'] else '' }}"
+    chrony_service: "chronyd"
+    chrony_confdir: "/etc/chrony"
+  tasks:
+    - name: Install Chrony
+      package:
+        name: "{{ chrony_package }}"
+        state: present
+      when: chrony_package | length > 0
+      notify: Restart Chrony
+
+    - name: Ensure Chrony config directory exists
+      file:
+        path: "{{ chrony_confdir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy Chrony configuration
+      copy:
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+        dest: "{{ chrony_confdir }}/chrony.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Chrony
+
+  handlers:
+    - name: Restart Chrony
+      service:
+        name: "{{ chrony_service }}"
+        state: restarted
+        enabled: true
 ```
