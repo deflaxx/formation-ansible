@@ -1,3 +1,15 @@
+# Sommaire
+- [Sommaire](#sommaire)
+  - [Installation](#installation)
+  - [Authentification](#authentification)
+  - [Configuration](#configuration)
+  - [Idempotence](#idempotence)
+  - [Playbooks](#playbooks)
+  - [Handler](#handler)
+  - [Variables](#variables)
+  - [Variables enregistrées](#variables-enregistrées)
+  - [Facts et variables implicites](#facts-et-variables-implicites)
+
 ## Installation
 1. Ubuntu APT => 2.10.8
 2. Ubuntu PPA => 2.17.8
@@ -551,4 +563,167 @@ mybike=Honda
       debug:
         msg: "User : {{ user }}, Mot de passe : {{ password }}"
 
+```
+
+## Variables enregistrées
+
+Écrivez un playbook kernel.yml qui affiche les infos détaillées du noyau sur tous vos Target Hosts. Utilisez la commande uname -a et le module debug avec le paramètre msg.
+```yaml
+- name: Infos noyau
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: kernel information
+      command: uname -a
+      changed_when: false
+      register: kernel_info
+
+    - debug:
+        msg: "{{ kernel_info.stdout_lines }}"
+```
+Essayez d’obtenir le même résultat en utilisant le paramètre var du module debug.
+```yaml
+- name: Infos noyau
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: kernel information
+      command: uname -a
+      changed_when: false
+      register: kernel_info
+
+    - debug:
+        var: kernel_info.stdout_lines
+```
+Écrivez un playbook packages.yml qui affiche le nombre total de paquets RPM installés sur les hôtes rocky et suse (rpm -qa | wc -l).
+```yaml
+- name: Nombre paquets
+  hosts: suse, rocky
+  tasks:
+    - name: Get number of packets installed
+      shell: "rpm -qa | wc -l"
+      changed_when: false
+      register: packet_nbr
+
+    - debug:
+        var: packet_nbr.stdout_lines
+```
+
+## Facts et variables implicites
+Playbook pkg-info.yml pour afficher le gestionnaire de paquets utilisé :
+```yaml
+- name: Get package manager information
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Identify package manager
+      debug:
+        msg: "Package manager used: {{ ansible_pkg_mgr }}"
+```
+Résultat à l'exécution : 
+```bash
+[vagrant@control playbooks]$ ansible-playbook pkg-info.yml 
+
+PLAY [Get package manager information] *********************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
+ok: [target03]
+ok: [target01]
+ok: [target02]
+
+TASK [Identify package manager] ****************************************************************************************************************************************************************************************
+ok: [target01] => {
+    "msg": "Package manager used: dnf"
+}
+ok: [target02] => {
+    "msg": "Package manager used: dnf"
+}
+ok: [target03] => {
+    "msg": "Package manager used: dnf"
+}
+
+PLAY RECAP *************************************************************************************************************************************************************************************************************
+target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+Playbook python-info.yml pour afficher la version de Python installée :
+```yaml
+- name: Get Python version
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Display Python version
+      debug:
+        msg: "{{ ansible_python_version }}"
+```
+Résultat à l'exécution :
+```bash
+[vagrant@control playbooks]$ ansible-playbook python-info.yml 
+
+PLAY [Get Python version] **********************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
+ok: [target03]
+ok: [target01]
+ok: [target02]
+
+TASK [Display Python version] ******************************************************************************************************************************************************************************************
+ok: [target01] => {
+    "msg": "3.9.18"
+}
+ok: [target02] => {
+    "msg": "3.9.18"
+}
+ok: [target03] => {
+    "msg": "3.9.18"
+}
+
+PLAY RECAP *************************************************************************************************************************************************************************************************************
+target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+Playbook dns-info.yml pour afficher le(s) serveur(s) DNS utilisé(s) :
+```yaml
+- name: Get DNS nameservers
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Display DNS nameservers
+      debug:
+        msg: "{{ ansible_dns.nameservers }}"
+```
+Résultat à l'exécution :
+```bash
+[vagrant@control playbooks]$ ansible-playbook dns-info.yml 
+
+PLAY [Get DNS nameservers] *********************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************************************************
+ok: [target02]
+ok: [target03]
+ok: [target01]
+
+TASK [Display DNS nameservers] *****************************************************************************************************************************************************************************************
+ok: [target01] => {
+    "msg": [
+        "10.0.2.3"
+    ]
+}
+ok: [target02] => {
+    "msg": [
+        "10.0.2.3"
+    ]
+}
+ok: [target03] => {
+    "msg": [
+        "10.0.2.3"
+    ]
+}
+
+PLAY RECAP *************************************************************************************************************************************************************************************************************
+target01                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target02                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target03                   : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
