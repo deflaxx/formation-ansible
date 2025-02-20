@@ -10,6 +10,7 @@
   - [Variables enregistrées](#variables-enregistrées)
   - [Facts et variables implicites](#facts-et-variables-implicites)
   - [Cibles hétérogènes](#cibles-hétérogènes)
+  - [Jinja \& Templates](#jinja--templates)
 
 ## Installation
 1. Ubuntu APT => 2.10.8
@@ -678,9 +679,11 @@ Playbook chrony-01.yml :
         group: root
         mode: '0755'
 
-    - name: Deploy Chrony configuration
+    - name: copy conf file on debian / ubuntu
       copy:
+        dest: /etc/chrony/chrony.conf
         content: |
+          # chrony.conf
           server 0.fr.pool.ntp.org iburst
           server 1.fr.pool.ntp.org iburst
           server 2.fr.pool.ntp.org iburst
@@ -689,11 +692,24 @@ Playbook chrony-01.yml :
           makestep 1.0 3
           rtcsync
           logdir /var/log/chrony
-        dest: /etc/chrony/chrony.conf
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Restart Chrony
+      when: ansible_os_family in ["Debian", "Ubuntu"]
+      notify: Restart chrony
+
+    - name: copy conf file on rocky / suse
+      copy:
+        dest: /etc/chrony.conf
+        content: |
+          # chrony.conf
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+      when: ansible_os_family in ["openSUSE Leap", "Rocky"]
+      notify: Restart chrony
 
   handlers:
     - name: Restart Chrony
@@ -750,4 +766,53 @@ Playbook chorny-02.yml :
         name: "{{ chrony_service }}"
         state: restarted
         enabled: true
+```
+
+## Jinja & Templates
+Créer une template Jinja :
+```
+server 0.fr.pool.ntp.org iburst
+server 1.fr.pool.ntp.org iburst
+server 2.fr.pool.ntp.org iburst
+server 3.fr.pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+```
+Playbook :
+```yaml
+- name: Configure NTP with Chrony
+  hosts: redhat
+  become: yes
+  tasks:
+    - name: Install chrony package
+      ansible.builtin.yum:
+        name: chrony
+        state: present
+
+    - name: Enable and start chronyd service
+      ansible.builtin.service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Determine chrony configuration path
+      ansible.builtin.set_fact:
+        chrony_conf_path: "{{ '/etc/chrony/chrony.conf' if ansible_os_family == 'RedHat' else '/etc/chrony.conf' }}"
+
+    - name: Deploy custom chrony.conf
+      ansible.builtin.template:
+        src: chrony.conf.j2
+        dest: "{{ chrony_conf_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart chronyd
+
+  handlers:
+    - name: Restart chronyd
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
 ```
